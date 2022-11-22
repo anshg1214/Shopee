@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ecommerce.ecommerce.model.User;
+import com.ecommerce.ecommerce.enums.UserRole;
 import com.ecommerce.ecommerce.repository.UserRepository;
 
 @CrossOrigin(origins = "http://localhost:9000")
@@ -41,7 +42,9 @@ public class UserController {
             if (users.isEmpty()) {
                 return new ResponseEntity<>(HttpStatus.NO_CONTENT);
             }
-
+            for (User user : users) {
+                user.setPassword(null);
+            }
             return new ResponseEntity<>(users, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -54,26 +57,64 @@ public class UserController {
         Optional<User> userData = userRepository.findById(id);
 
         if (userData.isPresent()) {
+            userData.get().setPassword(null);
             return new ResponseEntity<>(userData.get(), HttpStatus.OK);
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
 
-    // This method will update a user by id
-    // @PostMapping("/update/{id}")
-    // public ResponseEntity<User> updateUser(@PathVariable("id") long id, @RequestBody User user) {
-    //     Optional<User> userData = userRepository.findById(id);
+    @PostMapping("/edit/{id}")
+    public ResponseEntity<User> updateUser(@PathVariable("id") long id, @RequestBody User user) {
+        Optional<User> userData = userRepository.findById(id);
 
-    //     if (userData.isPresent()) {
-    //         User _user = userData.get();
-    //         _user.setName(user.getName());
-    //         _user.setPhone(user.getPhone());
+        if (userData.isPresent()) {
+            User _user = userData.get();
+            if (user.getName() != null) {
+                _user.setName(user.getName());
+            }
+            if (user.getPassword() != null) {
+                _user.setPassword(user.getPassword());
+            }
+            if (user.getRole() != null) {
+                _user.setRole(user.getRole());
+            }
+            if (user.getBalance() != 0) {
+                _user.setBalance(user.getBalance());
+            }
+            return new ResponseEntity<>(userRepository.save(_user), HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
 
-    //         return new ResponseEntity<>(userRepository.save(_user), HttpStatus.OK);
-    //     } else {
-    //         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    //     }
-    // }
+    @PostMapping("/signup")
+    public ResponseEntity<Object> createUser(@RequestBody User user) {
+        try {
+            if (userRepository.findByEmail(user.getEmail()).isPresent()) {
+                return new ResponseEntity<>("The user already exisits", HttpStatus.CONFLICT);
+            }
+            User _user = userRepository.save(
+                    new User(user.getName(), user.getEmail(), user.getPassword(), user.getPhone(), UserRole.CUSTOMER));
+            return new ResponseEntity<>(_user, HttpStatus.CREATED);
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    // Sign in
+    @PostMapping("/signin")
+    public ResponseEntity<Object> signIn(@RequestBody User user) {
+        try {
+            Optional<User> userData = userRepository.findByEmailAndPassword(user.getEmail(), user.getPassword());
+            if (userData.isPresent()) {
+                return new ResponseEntity<>(userData.get(), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>("The user does not exist.", HttpStatus.NOT_FOUND);
+            }
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 
 }

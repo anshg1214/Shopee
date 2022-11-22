@@ -39,8 +39,6 @@ public class ProductController {
             else
                 productRepository.findByName(name).forEach(products::add);
 
-            System.out.println(products);
-
             if (products.isEmpty()) {
                 return new ResponseEntity<>(HttpStatus.NO_CONTENT);
             }
@@ -68,7 +66,6 @@ public class ProductController {
     // This method returns a product by name
     @GetMapping("/search/{name}")
     public ResponseEntity<List<Product>> findByNameContaining(@PathVariable String name) {
-
         try {
             List<Product> products = productRepository.findByNameContaining(name);
 
@@ -81,17 +78,41 @@ public class ProductController {
         }
     }
 
-    // @PostMapping("/{id}")
-    // public ResponseEntity<Product> updateProduct(@PathVariable("id") long id, @RequestBody Product product) {
-    //     Optional<Product> productData = productRepository.findById(id);
+    // This method edits a product
+    @PostMapping("/edit/{id}")
+    public ResponseEntity<Product> updateProduct(@PathVariable("id") long id, @RequestBody Product product) {
+        Optional<Product> productData = productRepository.findById(id);
+        if (productData.isPresent()) {
+            Product _product = productData.get();
+            if (product.getName() != null) {
+                _product.setName(product.getName());
+            }
+            if (product.getDescription() != null) {
+                _product.setDescription(product.getDescription());
+            }
+            if (product.getPrice() != 0) {
+                _product.setPrice(product.getPrice());
+            }
+            // What if the quantity is 0?
+            // if (product.getQuantity() != 0) {
+            // _product.setQuantity(product.getQuantity());
+            // }
 
-    //     if (productData.isPresent()) {
-    //         Product _product = productData.get();
-    //         _product.setQuantity(product.getQuantity());
-    //         return new ResponseEntity<>(productRepository.save(_product), HttpStatus.OK);
-    //     } else {
-    //         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    //     }
-    // }
+            return new ResponseEntity<>(productRepository.save(_product), HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
+    // Delete a product by id
+    @PostMapping("/delete/{id}")
+    public ResponseEntity<HttpStatus> deleteProduct(@PathVariable("id") long id) {
+        try {
+            productRepository.deleteById(id);
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 
 }
