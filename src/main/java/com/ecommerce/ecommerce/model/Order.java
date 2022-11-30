@@ -2,6 +2,7 @@ package com.ecommerce.ecommerce.model;
 
 import javax.persistence.*;
 import com.ecommerce.ecommerce.enums.Status;
+import java.util.Date;
 
 @Entity
 @Table(name = "orders")
@@ -20,23 +21,38 @@ public class Order {
     @JoinColumn(name = "product_id", nullable = false)
     private Product orderItem;
 
-    @Column(name = "quantity")
+    @Column(name = "quantity", nullable = false)
     private int quantity;
 
-    @Column(name = "total_price")
-    private double totalPrice;
+    @Column(name = "total_price", nullable = false)
+    private int totalPrice;
 
+    @Column(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)
     private Status status;
+
+    @Column(name = "order_date", nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    private Date orderDate;
 
     public Order() {
     }
 
-    public Order(User user, Product orderItem, double totalPrice, Status status) {
+    public Order(User user, Product orderItem, int totalPrice, int quantity, Status status) {
         this.user = user;
         this.orderItem = orderItem;
+        this.quantity = quantity;
         this.totalPrice = totalPrice;
         this.status = status;
+        this.orderDate = new Date();
+    }
+
+    public Order(User user, Product orderItem, int totalPrice, int quantity) {
+        this.user = user;
+        this.orderItem = orderItem;
+        this.quantity = quantity;
+        this.totalPrice = totalPrice;
+        this.status = Status.PENDING;
+        this.orderDate = new Date();
     }
 
     public Long getId() {
@@ -67,11 +83,11 @@ public class Order {
         this.quantity = quantity;
     }
 
-    public double getTotalPrice() {
+    public int getTotalPrice() {
         return totalPrice;
     }
 
-    public void setTotalPrice(double totalPrice) {
+    public void setTotalPrice(int totalPrice) {
         this.totalPrice = totalPrice;
     }
 
@@ -81,6 +97,14 @@ public class Order {
 
     public void setStatus(Status status) {
         this.status = status;
+    }
+
+    public Date getOrderDate() {
+        return orderDate;
+    }
+
+    public void setOrderDate(Date orderDate) {
+        this.orderDate = orderDate;
     }
 
 }
