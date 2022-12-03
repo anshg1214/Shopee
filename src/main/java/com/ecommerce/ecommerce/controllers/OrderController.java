@@ -42,7 +42,7 @@ public class OrderController {
 
     // This method returns all the orders in the database
     @GetMapping("/all")
-    public ResponseEntity<List<Order>> getAllOrders(@RequestParam(required = false) String name) {
+    public ResponseEntity<Object> getAllOrders(@RequestParam(required = false) String name) {
 
         try {
             List<Order> orders = new ArrayList<Order>();
@@ -53,7 +53,7 @@ public class OrderController {
                 orderRepository.findByStatus(Status.valueOf(name)).forEach(orders::add);
 
             if (orders.isEmpty()) {
-                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+                return new ResponseEntity<>("[]", HttpStatus.NO_CONTENT);
             }
 
             return new ResponseEntity<>(orders, HttpStatus.OK);
@@ -65,25 +65,25 @@ public class OrderController {
 
     // This method returns an order by id
     @GetMapping("/id/{id}")
-    public ResponseEntity<Order> getOrderById(@PathVariable("id") long id) {
+    public ResponseEntity<Object> getOrderById(@PathVariable("id") long id) {
         Optional<Order> orderData = orderRepository.findById(id);
 
         if (orderData.isPresent()) {
             return new ResponseEntity<>(orderData.get(), HttpStatus.OK);
         } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>("{}", HttpStatus.NOT_FOUND);
         }
     }
 
     // This method returns an order by user id
     @GetMapping("/user/{id}")
-    public ResponseEntity<List<Order>> getOrderByUserId(@PathVariable("id") long id) {
+    public ResponseEntity<Object> getOrderByUserId(@PathVariable("id") long id) {
         List<Order> orderData = orderRepository.findByUser(id);
 
         if (orderData != null) {
             return new ResponseEntity<>(orderData, HttpStatus.OK);
         } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>("{}", HttpStatus.NOT_FOUND);
         }
     }
 
@@ -152,9 +152,6 @@ public class OrderController {
      * ]
      * }
      */
-    // When we create an order, we split the order such that we have one order for
-    // each product
-
     @PostMapping("/create")
     public ResponseEntity<Object> createOrder(@RequestBody Map<String, Object> body) {
         try {

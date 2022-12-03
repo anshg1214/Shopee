@@ -29,8 +29,19 @@ public class UserController {
     UserRepository userRepository;
 
     // This method returns all the users in the database
+    /*
+     * GET /users/all
+     * Returns all the users in the database
+     * 
+     * @return List<User> - List of all the users in the database
+     * 
+     * @throws 404 - If there is an error in the database
+     * 
+     * @param name (optional) - The name of the user in proper case
+     *
+     */
     @GetMapping("/all")
-    public ResponseEntity<List<User>> getAllUsers(@RequestParam(required = false) String name) {
+    public ResponseEntity<Object> getAllUsers(@RequestParam(required = false) String name) {
         try {
             List<User> users = new ArrayList<User>();
 
@@ -40,7 +51,7 @@ public class UserController {
                 userRepository.findByName(name).forEach(users::add);
 
             if (users.isEmpty()) {
-                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+                return new ResponseEntity<>("[]", HttpStatus.OK);
             }
             for (User user : users) {
                 user.setPassword(null);
@@ -52,18 +63,55 @@ public class UserController {
     }
 
     // This method returns a user by id
+    /*
+     * GET/users/{id}
+     * Returns a user by id
+     * 
+     * @return User - The user with the given id
+     * 
+     * @throws 500 - If there is an error in the database
+     * 
+     * @param id (long integer) - The id of the user
+     * 
+     * eg: http://localhost:8080/users/1
+     * 
+     * {
+     * "id": 1,
+     * "name": "Ansh Goyal",
+     * "email": "email@gmail.com",
+     * "password": null,
+     * "phone": 9876543210,
+     * "role": "ADMIN",
+     * "balance": 100000.0
+     * }
+     *
+     */
     @GetMapping("/id/{id}")
-    public ResponseEntity<User> getUserById(@PathVariable("id") long id) {
+    public ResponseEntity<Object> getUserById(@PathVariable("id") long id) {
         Optional<User> userData = userRepository.findById(id);
 
         if (userData.isPresent()) {
             userData.get().setPassword(null);
             return new ResponseEntity<>(userData.get(), HttpStatus.OK);
         } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>("{}", HttpStatus.NOT_FOUND);
         }
     }
 
+    /*
+     * POST /users/edit/{id}
+     * 
+     * @return User - The user with the given id
+     * 
+     * @throws 500 - If there is an error in the database
+     * 
+     * @throws 404 - If the user is not found
+     * 
+     * In the body of the request, send the user object with the updated values.
+     * Right now only the name, role, phone and balance can be updated.
+     * 
+     * Setting Balance to 0 will not work.
+     */
     @PostMapping("/edit/{id}")
     public ResponseEntity<User> updateUser(@PathVariable("id") long id, @RequestBody User user) {
         Optional<User> userData = userRepository.findById(id);
@@ -79,6 +127,11 @@ public class UserController {
             if (user.getRole() != null) {
                 _user.setRole(user.getRole());
             }
+
+            if (user.getPhone() != 0) {
+                _user.setPhone(user.getPhone());
+            }
+
             if (user.getBalance() != 0) {
                 _user.setBalance(user.getBalance());
             }
@@ -88,6 +141,40 @@ public class UserController {
         }
     }
 
+    // This method returns a user by email
+    /*
+     * POST /users/signup
+     * Returns a user by email
+     * 
+     * @return User - The user with the given email
+     * 
+     * @throws 409 - If the email already exists
+     * 
+     * @throws 500 - If there is an error in the database
+     * 
+     * @param email (String) - The email of the user
+     * 
+     * eg: http://localhost:8080/user/signup
+     * 
+     * Request Body:
+     * {
+     * "name": "Ansh Goyal",
+     * "email": "email@gmail.com"
+     * "password": "password",
+     * "phone": 9876543210
+     * }
+     * 
+     * Response Body:
+     * {
+     * "id": 1,
+     * "name": "Ansh Goyal",
+     * "email": "email@gmail.com"
+     * "password": null,
+     * "phone": 9876543210,
+     * "role": "USER",
+     * "balance": 1000.0
+     * }
+     */
     @PostMapping("/signup")
     public ResponseEntity<Object> createUser(@RequestBody User user) {
         try {
@@ -96,6 +183,8 @@ public class UserController {
             }
             User _user = userRepository.save(
                     new User(user.getName(), user.getEmail(), user.getPassword(), user.getPhone(), UserRole.CUSTOMER));
+
+            _user.setPassword(null);
             return new ResponseEntity<>(_user, HttpStatus.CREATED);
         } catch (Exception e) {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -103,11 +192,39 @@ public class UserController {
     }
 
     // Sign in
+    /*
+     * POST /users/signin
+     * Returns a user by email
+     * 
+     * @return User - The user with the given email
+     * 
+     * @throws 404 - If the user does not exist
+     * 
+     * @throws 500 - If there is an error in the database
+     * 
+     * Request Body:
+     * {
+     * "email": "
+     * "password": "
+     * }
+     * 
+     * Response Body:
+     * {
+     * "id": 1,
+     * "name": "Ansh Goyal",
+     * "email": "
+     * "password": null,
+     * "phone": 9876543210,
+     * "role": "USER",
+     * "balance": 1000.0
+     * }
+     */
     @PostMapping("/signin")
     public ResponseEntity<Object> signIn(@RequestBody User user) {
         try {
             Optional<User> userData = userRepository.findByEmailAndPassword(user.getEmail(), user.getPassword());
             if (userData.isPresent()) {
+
                 return new ResponseEntity<>(userData.get(), HttpStatus.OK);
             } else {
                 return new ResponseEntity<>("The user does not exist.", HttpStatus.NOT_FOUND);

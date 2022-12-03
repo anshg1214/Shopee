@@ -29,7 +29,7 @@ public class ProductController {
 
     // This method returns all the products in the database
     @GetMapping("/all")
-    public ResponseEntity<List<Product>> getAllProducts(@RequestParam(required = false) String name) {
+    public ResponseEntity<Object> getAllProducts(@RequestParam(required = false) String name) {
 
         try {
             List<Product> products = new ArrayList<Product>();
@@ -40,7 +40,7 @@ public class ProductController {
                 productRepository.findByName(name).forEach(products::add);
 
             if (products.isEmpty()) {
-                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+                return new ResponseEntity<>("[]", HttpStatus.NO_CONTENT);
             }
 
             return new ResponseEntity<>(products, HttpStatus.OK);
@@ -53,24 +53,24 @@ public class ProductController {
 
     // This method returns a product by id
     @GetMapping("/id/{id}")
-    public ResponseEntity<Product> getProductById(@PathVariable("id") long id) {
+    public ResponseEntity<Object> getProductById(@PathVariable("id") long id) {
         Optional<Product> productData = productRepository.findById(id);
 
         if (productData.isPresent()) {
             return new ResponseEntity<>(productData.get(), HttpStatus.OK);
         } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>("{}", HttpStatus.NOT_FOUND);
         }
     }
 
     // This method returns a product by name
     @GetMapping("/search/{name}")
-    public ResponseEntity<List<Product>> findByNameContaining(@PathVariable String name) {
+    public ResponseEntity<Object> findByNameContaining(@PathVariable String name) {
         try {
             List<Product> products = productRepository.findByNameContaining(name);
 
             if (products.isEmpty()) {
-                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+                return new ResponseEntity<>("[]", HttpStatus.NO_CONTENT);
             }
             return new ResponseEntity<>(products, HttpStatus.OK);
         } catch (Exception e) {
@@ -109,7 +109,7 @@ public class ProductController {
     public ResponseEntity<HttpStatus> deleteProduct(@PathVariable("id") long id) {
         try {
             productRepository.deleteById(id);
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            return new ResponseEntity<>(HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
