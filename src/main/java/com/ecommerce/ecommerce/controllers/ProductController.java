@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.ecommerce.ecommerce.model.Product;
 import com.ecommerce.ecommerce.repository.ProductRepository;
 
-@CrossOrigin(origins = "http://localhost:9000")
+@CrossOrigin
 @RestController
 @RequestMapping("/products")
 public class ProductController {

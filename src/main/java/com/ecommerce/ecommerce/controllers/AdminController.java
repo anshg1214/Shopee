@@ -25,7 +25,7 @@ import com.ecommerce.ecommerce.repository.OrderRepository;
 import com.ecommerce.ecommerce.model.User;
 import com.ecommerce.ecommerce.repository.UserRepository;
 
-@CrossOrigin(origins = "http://localhost:9000")
+@CrossOrigin
 @RestController
 @RequestMapping("/admin")
 public class AdminController {

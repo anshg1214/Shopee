@@ -20,7 +20,7 @@ import com.ecommerce.ecommerce.model.User;
 import com.ecommerce.ecommerce.enums.UserRole;
 import com.ecommerce.ecommerce.repository.UserRepository;
 
-@CrossOrigin(origins = "http://localhost:9000")
+@CrossOrigin
 @RestController
 @RequestMapping("/users")
 public class UserController {

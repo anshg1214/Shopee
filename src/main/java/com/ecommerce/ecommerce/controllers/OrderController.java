@@ -27,7 +27,7 @@ import com.ecommerce.ecommerce.repository.UserRepository;
 import com.ecommerce.ecommerce.repository.OrderRepository;
 import com.ecommerce.ecommerce.repository.ProductRepository;
 
-@CrossOrigin(origins = "http://localhost:9000")
+@CrossOrigin
 @RestController
 @RequestMapping("/orders")
 public class OrderController {
