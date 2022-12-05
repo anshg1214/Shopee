@@ -234,4 +234,33 @@ public class UserController {
         }
     }
 
+    // This method deletes a user by id
+    /*
+     * DELETE /users/{id}
+     * 
+     * @return String - The message
+     * 
+     * @throws 500 - If there is an error in the database
+     * 
+     * @throws 404 - If the user is not found
+     * 
+     * @param id (long integer) - The id of the user
+     * 
+     * eg: http://localhost:8080/users/1
+     * 
+     * Response Body:
+     * {
+     * "message": "User deleted successfully!"
+     * }
+     */
+    @PostMapping("/{id}")
+    public ResponseEntity<String> deleteUser(@PathVariable("id") long id) {
+        try {
+            userRepository.deleteById(id);
+            return new ResponseEntity<>("User deleted successfully!", HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
 }

@@ -1,6 +1,7 @@
 package com.ecommerce.ecommerce.controllers;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -69,6 +70,10 @@ public class OrderController {
         Optional<Order> orderData = orderRepository.findById(id);
 
         if (orderData.isPresent()) {
+
+            // Hide the password
+            Order order = orderData.get();
+            order.getUser().setPassword(null);
             return new ResponseEntity<>(orderData.get(), HttpStatus.OK);
         } else {
             return new ResponseEntity<>("{}", HttpStatus.NOT_FOUND);
@@ -78,10 +83,33 @@ public class OrderController {
     // This method returns an order by user id
     @GetMapping("/user/{id}")
     public ResponseEntity<Object> getOrderByUserId(@PathVariable("id") long id) {
-        List<Order> orderData = orderRepository.findByUser(id);
 
-        if (orderData != null) {
-            return new ResponseEntity<>(orderData, HttpStatus.OK);
+        User user = userRepository.findById(id).get();
+
+        if (user != null) {
+            List<Order> orders = orderRepository.findByUser(user);
+            for (Order order : orders) {
+                order.getUser().setPassword("");
+            }
+            return new ResponseEntity<>(orders, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>("{}", HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @GetMapping("/product/{id}")
+    public ResponseEntity<Object> getOrderByProductId(@PathVariable("id") long id) {
+
+        Product product = producRepository.findById(id).get();
+
+        if (product != null) {
+            List<Order> orders = orderRepository.findByProduct(product);
+
+            // Hide Password
+            for (Order order : orders) {
+                order.getUser().setPassword("");
+            }
+            return new ResponseEntity<>(orders, HttpStatus.OK);
         } else {
             return new ResponseEntity<>("{}", HttpStatus.NOT_FOUND);
         }
@@ -108,6 +136,7 @@ public class OrderController {
             if (order.getStatus() != null) {
                 _order.setStatus(order.getStatus());
             }
+            _order.setLastUpdated(new Date());
             return new ResponseEntity<>(orderRepository.save(_order), HttpStatus.OK);
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -122,8 +151,8 @@ public class OrderController {
             Optional<Order> orderData = orderRepository.findById(id);
             if (orderData.isPresent()) {
                 Order order = orderData.get();
-                order.getOrderItems().setQuantity(order.getOrderItems().getQuantity() + order.getQuantity());
-                producRepository.save(order.getOrderItems());
+                order.getProducts().setQuantity(order.getProducts().getQuantity() + order.getQuantity());
+                producRepository.save(order.getProducts());
             }
 
             orderRepository.deleteById(id);
@@ -159,10 +188,15 @@ public class OrderController {
             List<Map<String, Object>> orderItems = (List<Map<String, Object>>) body.get("orderItems");
 
             List<Order> orders = new ArrayList<Order>();
+            List<Map<String, Object>> orderItemsResponse = new ArrayList<Map<String, Object>>();
             // Get the user
             Optional<User> userData = userRepository.findById(userId);
+
             if (userData.isPresent()) {
                 User user = userData.get();
+                List<Product> products = new ArrayList<Product>();
+
+                double balance = user.getBalance();
 
                 // Create the order
                 for (Map<String, Object> orderItem : orderItems) {
@@ -177,23 +211,56 @@ public class OrderController {
 
                         // Check if the quantity is available
                         if (product.getQuantity() < quantity) {
-                            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+                            return new ResponseEntity<>(
+                                    "Quantity " + " units for the product " + product.getName() + " is not available.",
+                                    HttpStatus.BAD_REQUEST);
                         }
 
-                        // Create the order
-                        Order order = new Order(user, product, price, quantity);
-                        orderRepository.save(order);
-                        orders.add(order);
-
-                        // Update the quantity of the product
-                        product.setQuantity(product.getQuantity() - quantity);
-                        producRepository.save(product);
+                        products.add(product);
+                        orderItem.put("product", product);
+                        orderItemsResponse.add(orderItem);
+                        balance -= price * quantity;
+                        if (balance < 0) {
+                            return new ResponseEntity<>("Insufficient Balance", HttpStatus.BAD_REQUEST);
+                        }
+                    } else {
+                        return new ResponseEntity<>("Product not found", HttpStatus.BAD_REQUEST);
                     }
                 }
+
+                // Check if the user has enough balance
+                if (balance < 0) {
+                    return new ResponseEntity<>("Insufficient Balance", HttpStatus.BAD_REQUEST);
+                }
+
+                for (Map<String, Object> orderItem : orderItemsResponse) {
+
+                    int quantity = (int) orderItem.get("quantity");
+                    int price = (int) orderItem.get("price");
+                    Product product = (Product) orderItem.get("product");
+
+                    // Update the quantity of the product
+                    product.setQuantity(product.getQuantity() - quantity);
+                    producRepository.save(product);
+
+                    // Create the order
+                    Order order = new Order(user, product, price, quantity);
+                    orderRepository.save(order);
+                    orders.add(order);
+
+                }
+
+                user.setBalance(balance);
+                userRepository.save(user);
+
             } else {
-                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+                return new ResponseEntity<>("The user does not exist.", HttpStatus.NOT_FOUND);
             }
 
+            // Hide Password
+            for (Order order : orders) {
+                order.getUser().setPassword("");
+            }
             return new ResponseEntity<>(orders, HttpStatus.CREATED);
         } catch (Exception e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);

@@ -19,7 +19,7 @@ public class Order {
 
     @ManyToOne
     @JoinColumn(name = "product_id", nullable = false)
-    private Product orderItem;
+    private Product product;
 
     @Column(name = "quantity", nullable = false)
     private int quantity;
@@ -34,25 +34,30 @@ public class Order {
     @Column(name = "order_date", nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private Date orderDate;
 
+    @Column(name = "update_date", nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    private Date lastUpdated;
+
     public Order() {
     }
 
-    public Order(User user, Product orderItem, int totalPrice, int quantity, Status status) {
+    public Order(User user, Product product, int totalPrice, int quantity, Status status) {
         this.user = user;
-        this.orderItem = orderItem;
+        this.product = product;
         this.quantity = quantity;
         this.totalPrice = totalPrice;
         this.status = status;
         this.orderDate = new Date();
+        this.lastUpdated = new Date();
     }
 
-    public Order(User user, Product orderItem, int totalPrice, int quantity) {
+    public Order(User user, Product product, int totalPrice, int quantity) {
         this.user = user;
-        this.orderItem = orderItem;
+        this.product = product;
         this.quantity = quantity;
         this.totalPrice = totalPrice;
         this.status = Status.PENDING;
         this.orderDate = new Date();
+        this.lastUpdated = new Date();
     }
 
     public Long getId() {
@@ -67,12 +72,12 @@ public class Order {
         this.user = user;
     }
 
-    public Product getOrderItems() {
-        return orderItem;
+    public Product getProducts() {
+        return product;
     }
 
-    public void setOrderItems(Product orderItem) {
-        this.orderItem = orderItem;
+    public void setProduct(Product product) {
+        this.product = product;
     }
 
     public int getQuantity() {
@@ -105,6 +110,14 @@ public class Order {
 
     public void setOrderDate(Date orderDate) {
         this.orderDate = orderDate;
+    }
+
+    public Date getLastUpdated() {
+        return lastUpdated;
+    }
+
+    public void setLastUpdated(Date lastUpdated) {
+        this.lastUpdated = lastUpdated;
     }
 
 }
