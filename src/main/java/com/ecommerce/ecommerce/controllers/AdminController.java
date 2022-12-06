@@ -40,6 +40,17 @@ public class AdminController {
     UserRepository userRepository;
 
     // This method returns all the orders in the database
+    /*
+     * GET /admin/all
+     * Returns all the orders in the database
+     * 
+     * @return List<Order> - List of all the orders in the database
+     * 
+     * @throws 404 - If there is an error in the database
+     * 
+     * @param name (optional) - The name of the order in proper case
+     *
+     */
     @GetMapping("/all")
     public ResponseEntity<List<Order>> getAllOrders(@RequestParam(required = false) String name) {
 
@@ -63,6 +74,15 @@ public class AdminController {
     }
 
     // This method returns a sales statistics for all the orders
+    /*
+     * GET /admin/reports
+     * Returns a sales statistics for all the orders
+     * 
+     * @return Map<String, Object> - A map containing the sales statistics
+     * 
+     * @throws 404 - If there is an error in the database
+     *
+     */
     @GetMapping("/reports")
     public ResponseEntity<Object> getSalesReport() {
 

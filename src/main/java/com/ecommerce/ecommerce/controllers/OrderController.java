@@ -42,6 +42,17 @@ public class OrderController {
     ProductRepository producRepository;
 
     // This method returns all the orders in the database
+    /*
+     * GET /orders/all
+     * Returns all the orders in the database
+     * 
+     * @return List<Order> - List of all the orders in the database
+     * 
+     * @throws 404 - If there is an error in the database
+     * 
+     * @param name (optional) - The name of the order in proper case
+     *
+     */
     @GetMapping("/all")
     public ResponseEntity<Object> getAllOrders(@RequestParam(required = false) String name) {
 
@@ -65,6 +76,17 @@ public class OrderController {
     }
 
     // This method returns an order by id
+    /*
+     * GET /orders/id/{id}
+     * Returns an order by id
+     * 
+     * @return Order - The order with the given id
+     * 
+     * @throws 404 - If there is no order with the given id
+     * 
+     * @param id - The id of the order
+     *
+     */
     @GetMapping("/id/{id}")
     public ResponseEntity<Object> getOrderById(@PathVariable("id") long id) {
         Optional<Order> orderData = orderRepository.findById(id);
@@ -81,6 +103,16 @@ public class OrderController {
     }
 
     // This method returns an order by user id
+    /*
+     * GET /orders/user/{id}
+     * Returns an order by user id
+     * 
+     * @param id - The id of the user
+     * 
+     * @return Order - The order with the given user id
+     * 
+     * @throws 404 - If there is no order with the given user id
+     */
     @GetMapping("/user/{id}")
     public ResponseEntity<Object> getOrderByUserId(@PathVariable("id") long id) {
 
@@ -97,6 +129,17 @@ public class OrderController {
         }
     }
 
+    // This method returns an order by product id
+    /*
+     * GET /orders/product/{id}
+     * Returns an order by product id
+     * 
+     * @param id - The id of the product
+     * 
+     * @return Order - The order with the given product id
+     * 
+     * @throws 404 - If there is no order with the given product id
+     */
     @GetMapping("/product/{id}")
     public ResponseEntity<Object> getOrderByProductId(@PathVariable("id") long id) {
 
@@ -116,6 +159,16 @@ public class OrderController {
     }
 
     // This method returns an order by status
+    /*
+     * GET /orders/status/{status}
+     * Returns an order by status
+     * 
+     * @param status - The status of the order
+     * 
+     * @return Order - The order with the given status
+     * 
+     * @throws 404 - If there is no order with the given status
+     */
     @GetMapping("/status/{status}")
     public ResponseEntity<List<Order>> getOrderByStatus(@PathVariable("status") String status) {
         List<Order> orderData = orderRepository.findByStatus(Status.valueOf(status));
@@ -128,6 +181,15 @@ public class OrderController {
     }
 
     // This method updates an order
+    /*
+     * POST /orders/update/{id}
+     * Updates an order
+     * 
+     * @param id - The id of the order
+     * 
+     * @RequestBody Order - The order to be updated
+     * - status
+     */
     @PostMapping("/update/{id}")
     public ResponseEntity<Order> updateOrder(@PathVariable("id") long id, @RequestBody Order order) {
         Optional<Order> orderData = orderRepository.findById(id);
@@ -144,6 +206,14 @@ public class OrderController {
     }
 
     // Delete Order
+    /*
+     * POST /orders/delete/{id}
+     * Deletes an order
+     * 
+     * @param id - The id of the order
+     * 
+     * @throws 404 - If there is no order with the given id
+     */
     @PostMapping("/delete/{id}")
     public ResponseEntity<HttpStatus> deleteOrder(@PathVariable("id") long id) {
         try {
@@ -164,6 +234,11 @@ public class OrderController {
 
     // Create Order
     /*
+     * POST /orders/create
+     * Creates an order
+     * 
+     * @RequestBody Order - The order to be created
+     * 
      * The body of the request must be like this:
      * {
      * "user": 1,

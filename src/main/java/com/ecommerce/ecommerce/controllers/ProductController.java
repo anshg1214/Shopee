@@ -28,6 +28,17 @@ public class ProductController {
     ProductRepository productRepository;
 
     // This method returns all the products in the database
+    /*
+     *  GET /products/all
+     * Returns all the products in the database
+     * 
+     * @return List<Product> - List of all the products in the database
+     * 
+     * @throws 404 - If there is an error in the database
+     * 
+     * @Throws 204 - If there are no products in the database
+     * 
+     */
     @GetMapping("/all")
     public ResponseEntity<Object> getAllProducts(@RequestParam(required = false) String name) {
 
@@ -52,6 +63,17 @@ public class ProductController {
     }
 
     // This method returns a product by id
+    /*
+     * GET /products/id/{id}
+     * Returns a product by id
+     * 
+     * @param id - The id of the product
+     * 
+     * @return Product - The product with the given id
+     * 
+     * @throws 404 - If there is an error in the database
+     * 
+     */
     @GetMapping("/id/{id}")
     public ResponseEntity<Object> getProductById(@PathVariable("id") long id) {
         Optional<Product> productData = productRepository.findById(id);
@@ -64,6 +86,17 @@ public class ProductController {
     }
 
     // This method returns a product by name
+    /*
+     * GET /products/name/{name}
+     * Returns a product by name
+     * 
+     * @param name - The name of the product
+     * 
+     * @return Product - The product with the given name
+     * 
+     * @throws 204 - If there is an error in the database
+     * 
+     */
     @GetMapping("/search/{name}")
     public ResponseEntity<Object> findByNameContaining(@PathVariable String name) {
         try {
@@ -79,6 +112,22 @@ public class ProductController {
     }
 
     // This method edits a product
+    /*
+     * POST /products/edit/{id}
+     * Edits a product by id
+     * 
+     * @param id - The id of the product
+     * 
+     * @RequestBody
+     *  - name (optional)
+     *  - description (optional)
+     *  - price (optional)
+     * 
+     * @return Product - The edited product
+     * 
+     * @throws 404 - If there is an error in the database
+     * 
+     */
     @PostMapping("/edit/{id}")
     public ResponseEntity<Product> updateProduct(@PathVariable("id") long id, @RequestBody Product product) {
         Optional<Product> productData = productRepository.findById(id);
@@ -105,6 +154,16 @@ public class ProductController {
     }
 
     // Delete a product by id
+    /*
+     * POST /products/delete/{id}
+     * Deletes a product by id
+     * 
+     * @param id - The id of the product
+     * 
+     * Returns 200 - If the product is deleted
+     * 
+     * Returns 500 - If there is an error in the database or the product does not exist
+     */
     @PostMapping("/delete/{id}")
     public ResponseEntity<HttpStatus> deleteProduct(@PathVariable("id") long id) {
         try {
