@@ -108,6 +108,11 @@ public class UserController {
      * @throws 404 - If the user is not found
      * 
      * In the body of the request, send the user object with the updated values.
+     * - name
+     * - password
+     * - role
+     * - phone
+     * - balance
      * Right now only the name, role, phone and balance can be updated.
      * 
      * Setting Balance to 0 will not work.
@@ -128,13 +133,18 @@ public class UserController {
                 _user.setRole(user.getRole());
             }
 
-            if (user.getPhone() != 0) {
+            if (user.getPhone() != null && user.getPhone() != 0) {
                 _user.setPhone(user.getPhone());
             }
 
             if (user.getBalance() != 0) {
                 _user.setBalance(user.getBalance());
             }
+
+            if (user.getBalance() == -1) {
+                _user.setBalance(0);
+            }
+
             return new ResponseEntity<>(userRepository.save(_user), HttpStatus.OK);
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
