@@ -16,6 +16,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.ecommerce.ecommerce.mail.EmailDetails;
+import com.ecommerce.ecommerce.mail.EmailService;
+
 import com.ecommerce.ecommerce.model.User;
 import com.ecommerce.ecommerce.enums.UserRole;
 import com.ecommerce.ecommerce.repository.UserRepository;
@@ -27,6 +30,9 @@ public class UserController {
 
     @Autowired
     UserRepository userRepository;
+
+    @Autowired
+    EmailService emailService;
 
     // This method returns all the users in the database
     /*
@@ -195,6 +201,18 @@ public class UserController {
                     new User(user.getName(), user.getEmail(), user.getPassword(), user.getPhone(), UserRole.CUSTOMER));
 
             _user.setPassword(null);
+
+            // Send email
+            String subject = "Welcome to Gada Electronics";
+            String body = "Hello " + _user.getName() + ",\n\n"
+                    + "Welcome to the Gada Electronics. You can now start ordering.\n\n"
+                    + "Regards,\n" + "Ansh Goyal";
+
+            EmailDetails emailDetails = new EmailDetails(_user.getEmail(), body, subject, null);
+            String status = emailService.sendSimpleMail(emailDetails);
+
+            System.out.println("Email Status: " + status);
+
             return new ResponseEntity<>(_user, HttpStatus.CREATED);
         } catch (Exception e) {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
