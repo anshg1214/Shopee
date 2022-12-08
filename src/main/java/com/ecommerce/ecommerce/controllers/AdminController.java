@@ -101,13 +101,13 @@ public class AdminController {
 
             for (Status status : Status.values()) {
                 List<Order> orders = orderRepository.findByStatus(status);
-                orderStatistics.put(status.toString(), orders.size());
-                orderAmount.put(status.toString(), orders.stream().mapToDouble(Order::getTotalPrice).sum());
+                orderStatistics.put(status.toString().toLowerCase(), orders.size());
+                orderAmount.put(status.toString().toLowerCase(), orders.stream().mapToDouble(Order::getTotalPrice).sum());
             }
 
             for (UserRole role : UserRole.values()) {
                 List<User> users = userRepository.findByRole(role);
-                userStatistics.put(role.toString(), users.size());
+                userStatistics.put(role.toString().toLowerCase(), users.size());
             }
 
             salesReport.put("totalOrders", totalOrders);
