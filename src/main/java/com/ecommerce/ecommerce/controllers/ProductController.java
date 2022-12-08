@@ -29,7 +29,7 @@ public class ProductController {
 
     // This method returns all the products in the database
     /*
-     *  GET /products/all
+     * GET /products/all
      * Returns all the products in the database
      * 
      * @return List<Product> - List of all the products in the database
@@ -119,9 +119,9 @@ public class ProductController {
      * @param id - The id of the product
      * 
      * @RequestBody
-     *  - name (optional)
-     *  - description (optional)
-     *  - price (optional)
+     * - name (optional)
+     * - description (optional)
+     * - price (optional)
      * 
      * @return Product - The edited product
      * 
@@ -162,7 +162,8 @@ public class ProductController {
      * 
      * Returns 200 - If the product is deleted
      * 
-     * Returns 500 - If there is an error in the database or the product does not exist
+     * Returns 500 - If there is an error in the database or the product does not
+     * exist
      */
     @PostMapping("/delete/{id}")
     public ResponseEntity<HttpStatus> deleteProduct(@PathVariable("id") long id) {
@@ -171,6 +172,18 @@ public class ProductController {
             return new ResponseEntity<>(HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @PostMapping("/create")
+    public ResponseEntity<Product> createProduct(@RequestBody Product product) {
+        try {
+            Product _product = productRepository.save(new Product(product.getName(), product.getPrice(),
+                    product.getDiscount(), product.getDescription(), product.getQuantity(), product.getImage(),
+                    product.getDelivery()));
+            return new ResponseEntity<>(_product, HttpStatus.CREATED);
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
