@@ -153,9 +153,21 @@ public class ProductController {
                 _product.setPrice(product.getPrice());
             }
             // What if the quantity is 0?
-            // if (product.getQuantity() != 0) {
-            // _product.setQuantity(product.getQuantity());
-            // }
+            if (product.getQuantity() != 0) {
+            _product.setQuantity(product.getQuantity());
+            }
+
+            if (product.getDelivery() != 0) {
+                _product.setDelivery(product.getDelivery());
+            }
+
+            if (product.getImage() != null) {
+                _product.setImage(product.getImage());
+            }
+
+            if (product.getDiscount() != 0) {
+                _product.setDiscount(product.getDiscount());
+            }
 
             return new ResponseEntity<>(productRepository.save(_product), HttpStatus.OK);
         } else {
