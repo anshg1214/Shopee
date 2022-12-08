@@ -110,7 +110,7 @@ public class ProductController {
     @GetMapping("/search/{name}")
     public ResponseEntity<Object> findByNameContaining(@PathVariable String name) {
         try {
-            List<Product> products = productRepository.findByNameContaining(name);
+            List<Product> products = productRepository.findByNameContainingIgnoreCase(name);
 
             if (products.isEmpty()) {
                 return new ResponseEntity<>("[]", HttpStatus.NO_CONTENT);

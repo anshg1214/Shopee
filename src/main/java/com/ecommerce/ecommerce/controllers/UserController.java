@@ -141,7 +141,7 @@ public class UserController {
             if (user.getName() != null) {
                 _user.setName(user.getName());
             }
-            if (user.getPassword() != null) {
+            if (user.getPassword() != null || user.getPassword() == "") {
                 _user.setPassword(user.getPassword());
             }
             if (user.getRole() != null) {
