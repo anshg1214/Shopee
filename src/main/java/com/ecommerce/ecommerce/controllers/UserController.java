@@ -144,14 +144,16 @@ public class UserController {
             }
 
             if (user.getBalance() != 0) {
-                _user.setBalance(user.getBalance());
+                _user.setBalance(_user.getBalance() + user.getBalance());
             }
 
             if (user.getBalance() == -1) {
                 _user.setBalance(0);
             }
 
-            return new ResponseEntity<>(userRepository.save(_user), HttpStatus.OK);
+            userRepository.save(_user);
+            _user.setPassword(null);
+            return new ResponseEntity<>(_user, HttpStatus.OK);
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
@@ -203,10 +205,12 @@ public class UserController {
             _user.setPassword(null);
 
             // Send email
-            String subject = "Welcome to Gada Electronics";
+            String subject = "Welcome to Shopify";
             String body = "Hello " + _user.getName() + ",\n\n"
-                    + "Welcome to the Gada Electronics. You can now start ordering.\n\n"
-                    + "Regards,\n" + "Ansh Goyal";
+                    + "Welcome to the Shopify. You can now start ordering your favoutite stuff directly from out website.\n\n"
+                    + "Your account details are as follows:\n" + "Email: " + _user.getEmail() + "\n" + "Phone: " + _user.getPhone()
+                    + "\n\n" + " Happy Shopping!!\n\n"
+                    + "Regards,\n" + "Team Shopify";
 
             EmailDetails emailDetails = new EmailDetails(_user.getEmail(), body, subject, null);
             String status = emailService.sendSimpleMail(emailDetails);
@@ -252,6 +256,7 @@ public class UserController {
         try {
             Optional<User> userData = userRepository.findByEmailAndPassword(user.getEmail(), user.getPassword());
             if (userData.isPresent()) {
+                userData.get().setPassword(null);
 
                 return new ResponseEntity<>(userData.get(), HttpStatus.OK);
             } else {
