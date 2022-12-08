@@ -207,9 +207,11 @@ public class UserController {
             // Send email
             String subject = "Welcome to Shopify";
             String body = "Hello " + _user.getName() + ",\n\n"
-                    + "Welcome to the Shopify. You can now start ordering your favoutite stuff directly from out website.\n\n"
-                    + "Your account details are as follows:\n" + "Email: " + _user.getEmail() + "\n" + "Phone: " + _user.getPhone()
-                    + "\n\n" + " Happy Shopping!!\n\n"
+                    + "Welcome to the Shopify. You can now start ordering your favoutite stuff directly from our website.\n\n"
+                    + "Your account details are as follows:\n" 
+                    + "Email: " + _user.getEmail() + "\n" 
+                    + "Phone: " + _user.getPhone()+ "\n\n" 
+                    + "Happy Shopping!!\n\n"
                     + "Regards,\n" + "Team Shopify";
 
             EmailDetails emailDetails = new EmailDetails(_user.getEmail(), body, subject, null);

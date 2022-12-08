@@ -23,6 +23,9 @@ import com.ecommerce.ecommerce.model.User;
 import com.ecommerce.ecommerce.model.Order;
 import com.ecommerce.ecommerce.model.Product;
 
+import com.ecommerce.ecommerce.mail.EmailDetails;
+import com.ecommerce.ecommerce.mail.EmailService;
+
 import com.ecommerce.ecommerce.repository.UserRepository;
 import com.ecommerce.ecommerce.repository.OrderRepository;
 import com.ecommerce.ecommerce.repository.ProductRepository;
@@ -40,6 +43,9 @@ public class OrderController {
 
     @Autowired
     ProductRepository producRepository;
+
+    @Autowired
+    EmailService emailService;
 
     // This method returns all the orders in the database
     /*
@@ -223,6 +229,9 @@ public class OrderController {
                 Order order = orderData.get();
                 order.getProducts().setQuantity(order.getProducts().getQuantity() + order.getQuantity());
                 producRepository.save(order.getProducts());
+                User _user = order.getUser();
+                _user.setBalance(_user.getBalance() + order.getTotalPrice());
+                userRepository.save(_user);
             }
 
             orderRepository.deleteById(id);
@@ -336,6 +345,32 @@ public class OrderController {
             for (Order order : orders) {
                 order.getUser().setPassword("");
             }
+
+            // Extract data from the orders and make it a string for the email
+            String orderDetails = "";
+            for (Order order : orders) {
+                orderDetails += "Order ID: " + order.getId() + "\n";
+                orderDetails += "Product: " + order.getProducts().getName() + "\n";
+                orderDetails += "Quantity: " + order.getQuantity() + "\n";
+                orderDetails += "Order Status: " + order.getStatus() + "\n";
+                orderDetails += "Order Total: " + order.getTotalPrice() + "\n\n";
+            }
+            User user = userData.get();
+
+            String subject = "Order Placed Successfully";
+            String mailBody = "Hello " + user.getName() + ",\n\n"
+                    + "Your Order has been placed successfully.\n\n"
+                    + "Order Details:\n\n"
+                    + orderDetails
+                    + "Thank you for shopping with us.\n"
+                    + "Happy Shopping!!\n\n"
+                    + "Regards,\n" + "Team Shopify";
+
+            EmailDetails emailDetails = new EmailDetails(user.getEmail(), mailBody, subject, null);
+            String status = emailService.sendSimpleMail(emailDetails);
+
+            System.out.println("Email Status: " + status);
+
             return new ResponseEntity<>(orders, HttpStatus.CREATED);
         } catch (Exception e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
