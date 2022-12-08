@@ -18,9 +18,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.ecommerce.ecommerce.mail.EmailDetails;
 import com.ecommerce.ecommerce.mail.EmailService;
-
+import com.ecommerce.ecommerce.model.Order;
+import com.ecommerce.ecommerce.model.Product;
 import com.ecommerce.ecommerce.model.User;
 import com.ecommerce.ecommerce.enums.UserRole;
+import com.ecommerce.ecommerce.repository.OrderRepository;
+import com.ecommerce.ecommerce.repository.ProductRepository;
 import com.ecommerce.ecommerce.repository.UserRepository;
 
 @CrossOrigin
@@ -33,6 +36,12 @@ public class UserController {
 
     @Autowired
     EmailService emailService;
+
+    @Autowired
+    OrderRepository orderRepository;
+
+    @Autowired
+    ProductRepository productRepository;
 
     // This method returns all the users in the database
     /*
@@ -208,9 +217,9 @@ public class UserController {
             String subject = "Welcome to Shopify";
             String body = "Hello " + _user.getName() + ",\n\n"
                     + "Welcome to the Shopify. You can now start ordering your favoutite stuff directly from our website.\n\n"
-                    + "Your account details are as follows:\n" 
-                    + "Email: " + _user.getEmail() + "\n" 
-                    + "Phone: " + _user.getPhone()+ "\n\n" 
+                    + "Your account details are as follows:\n"
+                    + "Email: " + _user.getEmail() + "\n"
+                    + "Phone: " + _user.getPhone() + "\n\n"
                     + "Happy Shopping!!\n\n"
                     + "Regards,\n" + "Team Shopify";
 
@@ -288,10 +297,28 @@ public class UserController {
      * "message": "User deleted successfully!"
      * }
      */
-    @PostMapping("/{id}")
+    @PostMapping("/delete/{id}")
     public ResponseEntity<String> deleteUser(@PathVariable("id") long id) {
         try {
+            // First we delete all his orders
+            Optional<User> userData = userRepository.findById(id);
+
+            if (userData.isPresent()) {
+                List<Order> orders = orderRepository.findByUser(userData.get());
+                for (Order order : orders) {
+                    // Increase the stock of the product
+                    Product product = order.getProducts();
+                    product.setQuantity(product.getQuantity() + order.getQuantity());
+                    productRepository.save(product);
+
+                    orderRepository.deleteById(order.getId());
+                }
+            } else {
+                return new ResponseEntity<>("The user does not exist.", HttpStatus.NOT_FOUND);
+            }
+
             userRepository.deleteById(id);
+
             return new ResponseEntity<>("User deleted successfully!", HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);

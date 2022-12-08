@@ -16,8 +16,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.ecommerce.ecommerce.model.Order;
 import com.ecommerce.ecommerce.model.Product;
+import com.ecommerce.ecommerce.model.User;
+import com.ecommerce.ecommerce.repository.OrderRepository;
 import com.ecommerce.ecommerce.repository.ProductRepository;
+import com.ecommerce.ecommerce.repository.UserRepository;
 
 @CrossOrigin
 @RestController
@@ -26,6 +30,12 @@ public class ProductController {
 
     @Autowired
     ProductRepository productRepository;
+
+    @Autowired
+    OrderRepository orderRepository;
+
+    @Autowired
+    UserRepository userRepository;
 
     // This method returns all the products in the database
     /*
@@ -166,12 +176,29 @@ public class ProductController {
      * exist
      */
     @PostMapping("/delete/{id}")
-    public ResponseEntity<HttpStatus> deleteProduct(@PathVariable("id") long id) {
+    public ResponseEntity<String> deleteProduct(@PathVariable("id") long id) {
+
         try {
+            // First we delete all the orders
+            Optional<Product> productData = productRepository.findById(id);
+
+            if (productData.isPresent()) {
+                List<Order> orders = orderRepository.findByProduct(productData.get());
+                for (Order order : orders) {
+                    User user = order.getUser();
+                    user.setBalance(user.getBalance() + order.getTotalPrice());
+                    userRepository.save(user);
+                    orderRepository.deleteById(order.getId());
+                }
+            } else {
+                return new ResponseEntity<>("The product does not exist.", HttpStatus.NOT_FOUND);
+            }
+
             productRepository.deleteById(id);
-            return new ResponseEntity<>(HttpStatus.OK);
+
+            return new ResponseEntity<>("Product deleted successfully!", HttpStatus.OK);
         } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
