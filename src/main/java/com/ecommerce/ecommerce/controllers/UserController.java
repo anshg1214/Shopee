@@ -21,6 +21,7 @@ import com.ecommerce.ecommerce.mail.EmailService;
 import com.ecommerce.ecommerce.model.Order;
 import com.ecommerce.ecommerce.model.Product;
 import com.ecommerce.ecommerce.model.User;
+import com.ecommerce.ecommerce.password.MD5;
 import com.ecommerce.ecommerce.enums.UserRole;
 import com.ecommerce.ecommerce.repository.OrderRepository;
 import com.ecommerce.ecommerce.repository.ProductRepository;
@@ -208,8 +209,11 @@ public class UserController {
             if (userRepository.findByEmail(user.getEmail()).isPresent()) {
                 return new ResponseEntity<>("The user already exisits", HttpStatus.CONFLICT);
             }
+
+            String encodedPass = MD5.getMd5(user.getPassword());
+
             User _user = userRepository.save(
-                    new User(user.getName(), user.getEmail(), user.getPassword(), user.getPhone(), UserRole.CUSTOMER));
+                    new User(user.getName(), user.getEmail(), encodedPass, user.getPhone(), UserRole.CUSTOMER));
 
             _user.setPassword(null);
 
@@ -265,7 +269,8 @@ public class UserController {
     @PostMapping("/signin")
     public ResponseEntity<Object> signIn(@RequestBody User user) {
         try {
-            Optional<User> userData = userRepository.findByEmailAndPassword(user.getEmail(), user.getPassword());
+            String encodedPass = MD5.getMd5(user.getPassword());
+            Optional<User> userData = userRepository.findByEmailAndPassword(user.getEmail(), encodedPass);
             if (userData.isPresent()) {
                 userData.get().setPassword(null);
 
