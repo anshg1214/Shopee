@@ -22,6 +22,7 @@ import com.ecommerce.ecommerce.model.Order;
 import com.ecommerce.ecommerce.model.Product;
 import com.ecommerce.ecommerce.model.User;
 import com.ecommerce.ecommerce.password.MD5;
+import com.ecommerce.ecommerce.password.RandomPassword;
 import com.ecommerce.ecommerce.enums.UserRole;
 import com.ecommerce.ecommerce.repository.OrderRepository;
 import com.ecommerce.ecommerce.repository.ProductRepository;
@@ -330,4 +331,35 @@ public class UserController {
         }
     }
 
+    @PostMapping("/forgotPassword")
+    public ResponseEntity<String> forgotPassword(@RequestParam String email) {
+        try {
+            Optional<User> userData = userRepository.findByEmail(email);
+
+            if (userData.isPresent()) {
+                String randomPassword = RandomPassword.generateRandomPassword();
+                String hashedRandomPassword = MD5.getMd5(randomPassword);
+
+                userData.get().setPassword(hashedRandomPassword);
+                userRepository.save(userData.get());
+
+                // Send email
+                String subject = "Shopify - Forgot Password";
+                String body = "Hello " + userData.get().getName() + ",\n\n"
+                        + "Your new password is: " + randomPassword + "\n\n"
+                        + "Regards,\n" + "Team Shopify";
+
+                EmailDetails emailDetails = new EmailDetails(userData.get().getEmail(), body, subject, null);
+                String status = emailService.sendSimpleMail(emailDetails);
+
+                System.out.println("Email Status: " + status);
+
+                return new ResponseEntity<>("Email sent successfully!", HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>("The user does not exist.", HttpStatus.NOT_FOUND);
+            }
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 }
